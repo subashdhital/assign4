@@ -10,16 +10,17 @@ GitHub: https://github.com/subashdhital/assign4.git
 *
 ********************************************************************************/ 
 
-
 const express = require("express");
 const path = require("path");
 const data = require("./modules/collegeData.js");
+
 
 const app = express();
 
 const HTTP_PORT = process.env.PORT || 8080;
 
 app.use (express.urlencoded({ extended: true }) );
+
 app.use(express.static("public"));
 
 app.get("/", (req,res) => {
@@ -33,12 +34,13 @@ app.get("/about", (req,res) => {
 app.get("/htmlDemo", (req,res) => {
     res.sendFile(path.join(__dirname, "/views/htmlDemo.html"));
 });
+
 app.get("/students/add", (req,res) => {
     res.sendFile(path.join(__dirname, "/views/addStudent.html"));
 });
 
 app.post("/students/add", (req, res)=>{
-
+    // console.log(req.body);
     data.addStudent(req.body)
     .then(() => {
         res.redirect('/students');
@@ -47,6 +49,8 @@ app.post("/students/add", (req, res)=>{
         res.status(500).send('Error adding student: ' + error.message);
     });
 });
+
+
 app.get("/students", (req, res) => {
     if (req.query.course) {
         data.getStudentsByCourse(req.query.course).then((data) => {
