@@ -7,8 +7,8 @@
 * Name: Subash Dhital Student ID: 12334233 Date: March 8, 2024
 
 GitHub: https://github.com/subashdhital/assign4.git 
-Cyclic: https://bright-sock-calf.cyclic.app
-*
+Cyclic: https://itchy-sweatsuit-bass.cyclic.app/
+
 ********************************************************************************/ 
 
 const express = require("express");
