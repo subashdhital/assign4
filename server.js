@@ -7,37 +7,65 @@
 * Name: Subash Dhital Student ID: 12334233 Date: March 8, 2024
 
 GitHub: https://github.com/subashdhital/assign4.git 
-Cyclic: https://itchy-sweatsuit-bass.cyclic.app/
-
+Cyclic: https://bright-sock-calf.cyclic.app
+*
 ********************************************************************************/ 
 
 const express = require("express");
 const path = require("path");
 const data = require("./modules/collegeData.js");
-
-
+const exphbs = require('express-handlebars');
 const app = express();
 
 const HTTP_PORT = process.env.PORT || 8080;
+
+app.engine('.hbs', exphbs.engine({ 
+    extname: '.hbs' ,
+    helpers:
+    {
+navLink: function(url, options){
+    return `<li class="nav-item">
+    <a class="nav-link ${url == app.locals.activeRoute ? "active" : "" }"
+    href="${url}">${options.fn(this)}</a>
+    </li>`;
+   },
+
+   equal: function (lvalue, rvalue, options) {
+    if (arguments.length < 3)
+    throw new Error("Handlebars Helper equal needs 2 parameters");
+    if (lvalue != rvalue) {
+    return options.inverse(this);
+    } else {
+    return options.fn(this);
+    }
+   }}}));
+app.set('view engine', '.hbs');
 
 app.use (express.urlencoded({ extended: true }) );
 
 app.use(express.static("public"));
 
+app.use(function(req,res,next){
+    let route = req.path.substring(1);
+    app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
+    next();
+   });
+
+  
+
 app.get("/", (req,res) => {
-    res.sendFile(path.join(__dirname, "/views/home.html"));
+    res.render('home');
 });
 
 app.get("/about", (req,res) => {
-    res.sendFile(path.join(__dirname, "/views/about.html"));
+    res.render('about');
 });
 
 app.get("/htmlDemo", (req,res) => {
-    res.sendFile(path.join(__dirname, "/views/htmlDemo.html"));
+    res.render('htmlDemo');
 });
-
 app.get("/students/add", (req,res) => {
-    res.sendFile(path.join(__dirname, "/views/addStudent.html"));
+    res.render('addStudent');
 });
 
 app.post("/students/add", (req, res)=>{
@@ -55,37 +83,61 @@ app.post("/students/add", (req, res)=>{
 app.get("/students", (req, res) => {
     if (req.query.course) {
         data.getStudentsByCourse(req.query.course).then((data) => {
-            res.json(data);
+            res.render('students', {
+                students:data
+            })
         }).catch((err) => {
             res.json({ message: "no results" });
         });
     } else {
         data.getAllStudents().then((data) => {
-            res.json(data);
+            res.render('students', {
+                students: data
+            });
+            
         }).catch((err) => {
-            res.json({ message: "no results" });
+            res.render('students',{
+                message: "no results"
+            })
+            
         });
     }
 });
 
 app.get("/student/:studentNum", (req, res) => {
     data.getStudentByNum(req.params.studentNum).then((data) => {
-        res.json(data);
+        res.render("student", {
+            student:data
+        });
     }).catch((err) => {
         res.json({message:"no results"});
     });
 });
 
-app.get("/tas", (req,res) => {
-    data.getTAs().then((data)=>{
-        res.json(data);
-    });
-});
+
 
 app.get("/courses", (req,res) => {
     data.getCourses().then((data)=>{
-        res.json(data);
+        res.render('courses',{
+            courses: data
+        })
     });
+});
+
+app.get("/course/:courseID",(req, res) =>{
+    
+    data.getcourseById(req.params.courseID).then((data) => {
+        res.render('course',{
+            course:data
+        });
+        
+    });
+});
+
+app.post("/student/update", (req, res) => {
+    console.log(req.body);
+    data.updateStudent(req.body);
+    res.redirect("/students");
 });
 
 app.use((req,res)=>{
